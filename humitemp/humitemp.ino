@@ -10,16 +10,19 @@
 #define TEMPERATURE_PORT                A5
 #define HUMIDITY_PORT                   A3
 #define HUMIDITY_FUDGE_FACTOR           0
-#define HYSTERESIS                      0.5
+#define HYSTERESIS                      1.5
 #define TEMPERATURE_CONTROL             2                       // GPIO_0 dont use port  0 or 1
 #define HUMIDITY_CONTROL                4                       // GPIO_2
 #define CYCLE_LED_PIN                   8
 #define CYCLE_INDEX_INDICATOR           7
 #define PREHEAT_LED_PIN                 3
 #define CYCLE_START_BTN_PIN             9                       // button is connected to pin 9 and GND
-#define PREHEAT_BTN_PIN                 6 //4                   // button is connected to pin 6 and GND
+#define PREHEAT_BTN_PIN                 6                       // button is connected to pin 6 and GND
+#define DEHUMIDIFIER_PIN                5
+#define DEHUMIDIFIER_RATIO              1.10
 
 // Configuration
+#define MAX_CYCLES                      2
 #define MAX_TEMPERATURE_CYCLE1          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE1             95                  // %relative humidity
 #define DURATION_CYCLE1                 360                // minutes
@@ -35,6 +38,7 @@ bool cycle_started = false;
 byte preheat_btn_off = true;
 bool temperature_element_on;
 bool humidity_element_on;
+bool dehumidifier_on;
 byte cycle_index;
 unsigned long next_cycle_led_check = millis();
 bool cycle_led_state = false;
@@ -66,6 +70,11 @@ void setup() {
     pinMode(HUMIDITY_CONTROL, OUTPUT);                          
     digitalWrite(HUMIDITY_CONTROL, HIGH);
     bool humidity_element_on = false;
+
+    // dehumidifier
+    pinMode(DEHUMIDIFIER_PIN, OUTPUT);                          
+    digitalWrite(HUMIDITY_CONTROL, HIGH);
+    bool dehumidifier_on = false;    
     
     // cycle led init
     pinMode(CYCLE_LED_PIN, OUTPUT);
@@ -78,7 +87,6 @@ void setup() {
     // preheat init
     pinMode(PREHEAT_LED_PIN, OUTPUT);
     digitalWrite(PREHEAT_LED_PIN, HIGH);
-
         
     Serial.println("Temperature and Humidity measurement and control V0.01"); 
     Serial.println("======================================================");
@@ -97,7 +105,7 @@ public:
     int cycle_duration_in_minutes;    
 };
 
-Cycle Cycles[2] = {
+Cycle Cycles[MAX_CYCLES] = {
     Cycle(MAX_TEMPERATURE_CYCLE1, MAX_HUMIDITY_CYCLE1, DURATION_CYCLE1),
     Cycle(MAX_TEMPERATURE_CYCLE2, MAX_HUMIDITY_CYCLE2, DURATION_CYCLE2),
 };
@@ -105,7 +113,8 @@ Cycle Cycles[2] = {
 void set_all_relays_off()
 {
     set_temperature_element(false, 0);
-    set_humidity_element(false, 0);    
+    set_humidity_element(false, 0);
+    set_dehumidifier(false, 0);    
 }
 
 // the loop routine runs over and over again forever:
@@ -125,7 +134,7 @@ void loop(){
     
 
     bool user_stopped_cycle = false;
-    for (byte index=0; index < 2; index++) {
+    for (byte index=0; index < MAX_CYCLES; index++) {
         cycle_index = index;
         
         if (cycle_started || preheat_btn_off == false) {
@@ -147,9 +156,12 @@ void loop(){
                 }
                 if (last_humidity > (Cycles[index].max_humidity + HYSTERESIS)) {
                     set_humidity_element(false, last_humidity);
+                    if ((last_humidity / Cycles[index].max_humidity) > DEHUMIDIFIER_RATIO)
+                        set_dehumidifier(true, last_humidity); 
                 }
                 else if (last_humidity < (Cycles[index].max_humidity - HYSTERESIS)) {
                     set_humidity_element(true, last_humidity);
+                    set_dehumidifier(true, last_humidity);
                 }
 
                 //  if the "cycle start/stop" key was pressed, then exit 
@@ -189,8 +201,7 @@ void loop(){
                     Serial.print("Cycle completed: ");   
                     Serial.println(index);                                             
                 }
-                set_humidity_element(false, last_temperature);
-                set_temperature_element(false, last_humidity); 
+                set_all_relays_off();
             }
         }        
     }
@@ -261,6 +272,22 @@ void set_humidity_element(bool state, float humidity) {
         else {
             digitalWrite(HUMIDITY_CONTROL, HIGH);
             Serial.print("Humidity Relay = off, humidity = ");
+            Serial.println(humidity);
+        }
+    } 
+}
+
+void set_dehumidifier(bool state, float humidity) {
+    if (state != dehumidifier_on) {
+        dehumidifier_on = state;
+        if (dehumidifier_on) {
+            digitalWrite(DEHUMIDIFIER_PIN, LOW);
+            Serial.print("DehuHumidifier = on, humidity = ");
+            Serial.println(humidity);
+        }
+        else {
+            digitalWrite(DEHUMIDIFIER_PIN, HIGH);
+            Serial.print("DehuHumidifier = off, humidity = ");
             Serial.println(humidity);
         }
     } 
