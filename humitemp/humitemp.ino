@@ -4,13 +4,13 @@
 #define LOG_INTERVAL (30 * 1000)            // log every 30 seconds
 
 #define TEMPERATURE_OFFSET              30
-#define TEMPERATURE_FUDGE_FACTOR        0.11
+#define TEMPERATURE_FUDGE_FACTOR        0
 #define STEPS_PER_DEGREE                10.24
 #define NUM_AVG_VALUES                  10
 #define TEMPERATURE_PORT                A5
 #define HUMIDITY_PORT                   A3
-#define HUMIDITY_FUDGE_FACTOR           0.11
-#define HYSTERESIS                      2
+#define HUMIDITY_FUDGE_FACTOR           0
+#define HYSTERESIS                      0.5
 #define TEMPERATURE_CONTROL             2                       // GPIO_0 dont use port  0 or 1
 #define HUMIDITY_CONTROL                4                       // GPIO_2
 #define CYCLE_LED_PIN                   8
@@ -22,10 +22,10 @@
 // Configuration
 #define MAX_TEMPERATURE_CYCLE1          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE1             95                  // %relative humidity
-#define DURATION_CYCLE1                 720                // minutes
+#define DURATION_CYCLE1                 360                // minutes
 #define MAX_TEMPERATURE_CYCLE2          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE2             65                  // %relative humidity
-#define DURATION_CYCLE2                 720                // minutes
+#define DURATION_CYCLE2                 360                // minutes
 
 // key press management
 Bounce preheat_pushbutton = Bounce(); 
@@ -187,12 +187,16 @@ void loop(){
                     break;                
                 } else {
                     Serial.print("Cycle completed: ");   
-                    Serial.println(index);                        
+                    Serial.println(index);       
+                    set_humidity_element(false, last_temperature);
+                    set_temperature_element(false, last_humidity);                                       
                 }
             }
         }        
     }
     cycle_started = false;
+    set_humidity_element(false, -100);
+    set_temperature_element(false, -100);    
 }
 
 
