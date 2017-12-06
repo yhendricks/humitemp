@@ -187,10 +187,10 @@ void loop(){
                     break;                
                 } else {
                     Serial.print("Cycle completed: ");   
-                    Serial.println(index);       
-                    set_humidity_element(false, last_temperature);
-                    set_temperature_element(false, last_humidity);                                       
+                    Serial.println(index);                                             
                 }
+                set_humidity_element(false, last_temperature);
+                set_temperature_element(false, last_humidity); 
             }
         }        
     }
