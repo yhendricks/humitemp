@@ -25,10 +25,10 @@
 #define MAX_CYCLES                      2
 #define MAX_TEMPERATURE_CYCLE1          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE1             95                  // %relative humidity
-#define DURATION_CYCLE1                 360                // minutes
+#define DURATION_CYCLE1                 1440                // minutes
 #define MAX_TEMPERATURE_CYCLE2          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE2             65                  // %relative humidity
-#define DURATION_CYCLE2                 360                // minutes
+#define DURATION_CYCLE2                 720                // minutes
 
 // key press management
 Bounce preheat_pushbutton = Bounce(); 
@@ -88,7 +88,7 @@ void setup() {
     pinMode(PREHEAT_LED_PIN, OUTPUT);
     digitalWrite(PREHEAT_LED_PIN, HIGH);
         
-    Serial.println("Temperature and Humidity measurement and control V0.01"); 
+    Serial.println("Temperature and Humidity measurement and control V0.02"); 
     Serial.println("======================================================");
 }
 
@@ -171,7 +171,7 @@ void loop(){
                         set_all_relays_off();
                         user_stopped_cycle = true;
                         Serial.println("Cycle prematurely stopped by user");
-                        delay(2000);
+                        delay(1000);
                         break; 
                     }
                 }
@@ -181,7 +181,7 @@ void loop(){
                     check_preheat_button();
                     if (preheat_btn_off) {
                         set_all_relays_off();
-                        delay(2000);
+                        delay(1000);
                         break;
                     }
                 }                    
@@ -319,9 +319,11 @@ void check_preheat_button() {
             if (preheat_btn_off == false) {
                 digitalWrite(PREHEAT_LED_PIN, LOW);
                 Serial.println("Preheat ON");
+                //set_dehumidifier(true, 0);                  // test button
             } else {
                 digitalWrite(PREHEAT_LED_PIN, HIGH);
                 Serial.println("Preheat OFF");
+                //set_dehumidifier(false, 0);                 // test button
             }
         } 
     }                
