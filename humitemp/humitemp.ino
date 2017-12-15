@@ -54,9 +54,10 @@ bool cycle_pause_led_state = false;
 // vvvvvvvv  THINGSPEAK STUFF vvvvvvvvvvvvvv
 // Local Network Settings
 byte mac[] = { 0xD4, 0xA8, 0xE2, 0xFE, 0xA0, 0xA1 }; // Must be unique on local network
-//byte ip[] = { 10,10,136,56 };                // Must be unique on local network
-//byte gateway[] = { 10,10,136,210 };
-//byte subnet[] = { 255, 255, 255, 0 };
+//IPAddress dns_server(172, 17, 17, 27);
+//IPAddress ip(172, 17, 23, 55);                // Must be unique on local network
+//IPAddress gateway(172, 17, 0, 44);
+//IPAddress subnet(255, 255, 0, 0);
 #define updateInterval				25000       // Time interval in milliseconds to update ThingSpeak
 
 // Variable Setup
@@ -133,6 +134,10 @@ void startEthernet()
   delay(1000);
   
   // Connect to network amd obtain an IP address using DHCP
+//  Ethernet.begin(mac, ip, dns_server, gateway, subnet);
+//  Serial.println(F(" - Connected via static IP")); 
+//  return;
+   
   if (Ethernet.begin(mac) == 0)
   {
     Serial.println(F(" - DHCP Failed, will try again in 5 mins"));
@@ -257,7 +262,6 @@ void loop(){
             if (continue_cycle_index != index)
                 continue;            
         }
-        continue_cycle_index = -1;
         blink_cycle_pause_indicator_led();
         if (cycle_started || preheat_btn_off == false) {
             if (cycle_started)
@@ -271,6 +275,7 @@ void loop(){
                 else
                     print_config(index);
             }
+            continue_cycle_index = -1;
             unsigned long end_time;
             if (continue_cycle_index >= 0)
                 end_time = millis() + (unsigned long)duration_remaining_in_minutes * 60UL * 1000UL;
@@ -357,6 +362,7 @@ void loop(){
                     Serial.println(index);                        
                 }
                 set_all_relays_off();
+                delay(1000);
             }
         }        
     }
