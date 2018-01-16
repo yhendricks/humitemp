@@ -29,10 +29,10 @@
 #define MAX_CYCLES                      2
 #define MAX_TEMPERATURE_CYCLE1          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE1             95                  // %relative humidity
-#define DURATION_CYCLE1                 5                // minutes
+#define DURATION_CYCLE1                 1440                // minutes
 #define MAX_TEMPERATURE_CYCLE2          50                  // deg Celcius
 #define MAX_HUMIDITY_CYCLE2             65                  // %relative humidity
-#define DURATION_CYCLE2                 5                // minutes
+#define DURATION_CYCLE2                 720                // minutes
 
 // key press management
 Bounce preheat_pushbutton = Bounce(); 
